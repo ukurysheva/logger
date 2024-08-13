@@ -1,4 +1,4 @@
-module logger
+module github.com/ukurysheva/logger
 
 go 1.22
 
