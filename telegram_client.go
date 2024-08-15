@@ -1,10 +1,9 @@
-package logger
+package tglogger
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/hashicorp/go-cleanhttp"
 	"log"
 	"net/http"
@@ -23,32 +22,18 @@ type TelegramClient struct {
 	client *http.Client
 }
 
-func newTelegramClient(botToken string) *TelegramClient {
-	bot, err := tgbotapi.NewBotAPI(botToken)
-	if err != nil {
-		log.Fatalf("failed to connect to telegram bot: %v", err)
-	}
-
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-
-	var chatID int64
-	for update := range bot.GetUpdatesChan(u) {
-		if update.Message != nil && update.Message.Chat != nil {
-			chatID = update.Message.Chat.ID
-			break
-		}
-	}
-
+func newTelegramClient(botToken string, chatID int64) *TelegramClient {
 	return &TelegramClient{
+		token:  botToken,
 		chatID: chatID,
 		client: cleanhttp.DefaultPooledClient(),
 	}
 }
 
 type Message struct {
-	ChatID int64  `json:"chat_id"`
-	Text   string `json:"text"`
+	ChatID    int64  `json:"chat_id"`
+	Text      string `json:"text"`
+	ParseMode string `json:"parse_mode"`
 }
 
 // APIResponse is a response from the Telegram API with the result
@@ -62,11 +47,12 @@ type APIResponse struct {
 
 func (t *TelegramClient) SendLog(text string) {
 	payload, err := json.Marshal(Message{
-		ChatID: t.chatID,
-		Text:   text,
+		ChatID:    t.chatID,
+		Text:      text,
+		ParseMode: "HTML",
 	})
 	if err != nil {
-		log.Printf("failed to marshal log message")
+		log.Printf("logger - failed to marshal log messag\ne")
 
 		return
 	}
@@ -75,7 +61,7 @@ func (t *TelegramClient) SendLog(text string) {
 
 	resp, err := t.client.Post(method, "application/json", bytes.NewReader(payload))
 	if err != nil {
-		log.Printf("failed to send log")
+		log.Printf("logger - failed to send log\n\n")
 
 		return
 	}
@@ -83,6 +69,6 @@ func (t *TelegramClient) SendLog(text string) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("failed to send log - resp is not ok but %d", resp.StatusCode)
+		log.Printf("logger - failed to send log - resp is not ok but %d\n", resp.StatusCode)
 	}
 }
