@@ -13,7 +13,7 @@ go get github.com/ukurysheva/tglogger
 ### Requirements
 
 Tglogger requires some environment variables to be set:
-- `TG_LOGGER_TOKEN` - 
+- `TG_LOGGER_TOKEN`
 - `TG_LOGGER_CHAT_ID`
 
 ### Usage
@@ -22,14 +22,16 @@ import (
 	"github.com/ukurysheva/tglogger"
 )
 
-logger.Warn("some err")
+tglogger.Warn("some err")
 
-logger.Errorf("some err")
+tglogger.Errorf("some err")
 
 // Use option WithFields to set map of important fields
-logger.WithFields(logger.Fields{"chatID": 111}).Errorf("some err")
+tglogger.WithFields(tglogger.Fields{"chatID": 111}).Errorf("some err")
 ```
-## Outputs
+### Outputs
+
+<img src="imgs/output.png">
 
 ## FAQ
 ### How to get token
